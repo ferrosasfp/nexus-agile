@@ -716,6 +716,25 @@ El clarify es informativo, no bloqueante. El humano decide.
 23. **Separacion de roles**: Quien especifica no implementa, quien implementa no valida.
 24. **Story File como contrato**: Dev SOLO lee el Story File, nada mas.
 25. **Adversarial Review bloqueante**: Hallazgos BLOQUEANTE se corrigen antes de avanzar.
+26. **Modelo capaz para fases criticas**: Usar el modelo mas capaz disponible para analisis, implementacion y AR. Tareas mecanicas pueden usar modelos mas rapidos.
+
+---
+
+## Modelo Recomendado por Fase
+
+> Recomendacion informativa. Claude Code no fuerza el modelo por fase — lo decide quien invoca la sesion o el agente al lanzar subagentes con el parametro `model`.
+
+| Fase | Modelo recomendado | Razon |
+|------|--------------------|-------|
+| F0-F2 (analisis, SDD) | Opus | Razonamiento profundo, codebase grounding |
+| F2.5 (Story File) | Opus | Contrato critico, no puede tener ambiguedad |
+| F3 (implementacion) | Opus | Generacion de codigo con anti-alucinacion |
+| AR (Adversarial Review) | Opus | Seguridad requiere el modelo mas capaz |
+| CR (Code Review) | Opus/Sonnet | Revision de patrones, menos critico que AR |
+| F4 (QA/Validacion) | Opus/Sonnet | Verificacion puede ser parcialmente mecanica |
+| Quick Flow | Sonnet | Cambios triviales, no requiere profundidad |
+| Hotfix | Opus | Investigacion de causa raiz requiere profundidad |
+| Sprint Cadence | Sonnet | Ceremonias son estructuradas y repetitivas |
 
 ---
 
