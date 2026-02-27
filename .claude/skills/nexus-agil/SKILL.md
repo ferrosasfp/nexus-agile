@@ -37,6 +37,7 @@ Activar este workflow cuando el usuario diga:
 - "Inicia fase 0" / "Inicia F0" / "Inicia discovery"
 - "Adversarial review" / "Story file"
 - "Quick flow" / "Cambio trivial"
+- "Hotfix" / "Bug en produccion" / "Fix urgente"
 - Cualquier variacion que mencione "NexusAgil", "WasiAI", o "procesa HU"
 
 ---
@@ -78,7 +79,7 @@ HU (cualquier formato)
 [ F1: Discovery ] ------------- Analyst+Architect+UX: Work Item + ACs EARS + scope
     |
     v
-[ GATE 1: DISCOVERY_APPROVED ] - Humano revisa y aprueba Work Item
+[ GATE 1: HU_APPROVED ] -------- Humano escribe texto exacto HU_APPROVED
     |
     v
 [ F2: Spec/SDD ] -------------- Architect+Adversary: Context Map + SDD + Constraint Directives
@@ -87,7 +88,7 @@ HU (cualquier formato)
 [ Readiness Check ] ----------- Architect verifica: SDD listo para implementar?
     |
     v
-[ GATE 2: SPEC_APPROVED ] ----- Humano revisa y aprueba SDD
+[ GATE 2: SPEC_APPROVED ] ----- Humano escribe texto exacto SPEC_APPROVED
     |
     v
 [ F2.5: Story File ] ---------- Architect genera contrato autocontenido para Dev
@@ -113,6 +114,7 @@ DONE -> Persistir en doc/sdd/NNN-titulo/
 ---
 [ /nexus.clarify ] ------------- Consistency check (invocable en cualquier fase)
 [ Quick Flow ] ----------------- Triage: pipeline abreviado para cambios triviales
+[ Hotfix ] --------------------- Dev: pipeline para bugs en produccion
 [ Sprint Cadence ] ------------- SM: Lun/Mie/Vie ceremonies
 ```
 
@@ -203,6 +205,7 @@ Antes de F2, leer al menos:
 | Tipo | Senales | SDD_MODE |
 |------|---------|----------|
 | **Trivial** | 1-2 archivos, <30 lineas, sin BD, sin logica nueva | **patch** → Quick Flow (Triage) |
+| **Hotfix** | Bug en produccion, causa raiz desconocida, puede tocar auth/datos | **hotfix** → Hotfix Pipeline (Dev) |
 | **Bugfix** | Bug confirmado con repro steps | **bugfix** |
 | **Tech-task / refactor** | Sin cambio funcional visible | **mini** |
 | **Feature / improvement** con logica | Multiples archivos, posiblemente BD | **full** |
@@ -273,9 +276,11 @@ refactor/NNN-titulo-kebab
 ```
 Preguntar: "Creo branch `{branch}`? (si/no/otro nombre)"
 
-### GATE 1: DISCOVERY_APPROVED
-Presentar Work Item al humano. Esperar **DISCOVERY_APPROVED: yes**.
-- NO avanzar sin aprobacion explicita.
+### GATE 1: HU_APPROVED
+Presentar Work Item al humano. Esperar el texto exacto **HU_APPROVED**.
+- Solo el texto exacto `HU_APPROVED` activa el gate.
+- "ok", "dale", "si", "go", "avanza", "suena bien", "HU_APPROVED: yes" → NO activan el gate. Responder: "Para avanzar, escribe exactamente: HU_APPROVED"
+- NO avanzar sin el texto exacto.
 
 ### Persistencia F1
 Escribir en `doc/sdd/NNN-titulo/work-item.md`.
@@ -367,9 +372,11 @@ READINESS CHECK:
 Si falla cualquier check: corregir antes de presentar.
 
 ### GATE 2: SPEC_APPROVED
-Presentar SDD al humano. Esperar **SPEC_APPROVED: yes**.
+Presentar SDD al humano. Esperar el texto exacto **SPEC_APPROVED**.
+- Solo el texto exacto `SPEC_APPROVED` activa el gate.
+- "ok", "dale", "si", "go", "avanza", "suena bien", "SPEC_APPROVED: yes" → NO activan el gate. Responder: "Para avanzar, escribe exactamente: SPEC_APPROVED"
 - Con `[NEEDS CLARIFICATION]`: informar que debe resolverlos primero.
-- NO avanzar sin aprobacion explicita.
+- NO avanzar sin el texto exacto.
 
 ### Persistencia F2
 Escribir en `doc/sdd/NNN-titulo/sdd.md`.
@@ -563,10 +570,17 @@ Si hay DRIFT grave: alertar al humano.
 ```markdown
 | AC | Resultado | Evidencia | Test | Metodo |
 |----|-----------|-----------|------|--------|
-| AC1: WHEN... SHALL... | PASS/FAIL | [evidencia] | [test o N/A] | auto/manual |
+| AC1: WHEN... SHALL... | PASS/FAIL | [archivo:linea] | [test o N/A] | auto/manual |
 ```
 
-Cada AC con evidencia concreta — no "se ve bien".
+Cada AC con evidencia concreta citando `archivo:linea` — no "se ve bien".
+
+**Formato obligatorio de evidencia:**
+- `CUMPLE` — `src/components/X.tsx:42` (implementado y verificado)
+- `NO CUMPLE` — no encontrado en codebase
+- `PARCIAL` — `src/components/X.tsx:42` (implementado pero sin test)
+
+QA no puede marcar CUMPLE sin citar `archivo:linea` como evidencia.
 
 ### Fase 3: Quality Gates
 
@@ -640,6 +654,14 @@ Triage califica, ejecuta pipeline abreviado (4 pasos), y puede escalar a pipelin
 
 Activar con: "quick flow", "cambio trivial", "patch rapido".
 
+### Hotfix Pipeline
+
+Para bugs en produccion donde la causa raiz es desconocida y puede tocar auth/datos/pagos. A diferencia de Quick Flow, Hotfix requiere investigacion profunda de causa raiz y AR condicional.
+
+Pipeline: Investigacion → Fix minimo → AR (si toca auth/datos/pagos) → QA → Push.
+
+Activar con: "hotfix", "bug en produccion", "fix urgente".
+
 ---
 
 ## /nexus.clarify — Consistency Check
@@ -670,7 +692,7 @@ El clarify es informativo, no bloqueante. El humano decide.
 ## Reglas Globales
 
 1. **1 HU = 1 ejecucion**. No mezclar HUs.
-2. **Gates bloqueantes**. No avanzar sin aprobacion explicita del humano.
+2. **Gates bloqueantes**. No avanzar sin el texto exacto del gate (`HU_APPROVED`, `SPEC_APPROVED`). Variaciones informales no cuentan.
 3. **Abort**: Si el humano aborta, Docs actualiza _INDEX.md con ABORTED.
 4. **Auto-Blindaje**: Documentar errores cuando ocurren, no al final.
 5. **Stack del proyecto**: Respetar `project-context.md`, sin excepciones.

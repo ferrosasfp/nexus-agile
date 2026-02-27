@@ -47,14 +47,25 @@
 
 > Cada AC del Work Item/SDD verificado con evidencia concreta.
 
-| # | AC | Resultado | Evidencia | Test | Metodo |
-|---|----|-----------|-----------|------|--------|
-| 1 | WHEN [trigger], THE [sistema] SHALL [accion] | PASS/FAIL | [evidencia concreta] | `[test.ts]` o N/A | auto/manual |
-| 2 | WHILE [condicion], THE [sistema] SHALL [comp] | PASS/FAIL | [evidencia concreta] | `[test.ts]` o N/A | auto/manual |
-| 3 | IF [condicion], THEN THE [sistema] SHALL [resp] | PASS/FAIL | [evidencia concreta] | `[test.ts]` o N/A | auto/manual |
+| # | AC | Resultado | Evidencia (archivo:linea) | Test | Metodo |
+|---|----|-----------|---------------------------|------|--------|
+| 1 | WHEN [trigger], THE [sistema] SHALL [accion] | CUMPLE/NO CUMPLE/PARCIAL | `src/path/file.tsx:42` | `[test.ts]` o N/A | auto/manual |
+| 2 | WHILE [condicion], THE [sistema] SHALL [comp] | CUMPLE/NO CUMPLE/PARCIAL | `src/path/file.tsx:85` | `[test.ts]` o N/A | auto/manual |
+| 3 | IF [condicion], THEN THE [sistema] SHALL [resp] | CUMPLE/NO CUMPLE/PARCIAL | `src/path/file.tsx:120` | `[test.ts]` o N/A | auto/manual |
+
+### Formato obligatorio de evidencia
+
+QA **no puede marcar CUMPLE sin citar archivo:linea** como evidencia.
+
+| Resultado | Formato | Ejemplo |
+|-----------|---------|---------|
+| **CUMPLE** | `archivo:linea` | `src/components/FilterBar.tsx:42` |
+| **NO CUMPLE** | "no encontrado en codebase" | No encontrado en codebase |
+| **PARCIAL** | `archivo:linea` + razon | `src/components/FilterBar.tsx:42` (implementado pero sin test) |
 
 ### Tipos de evidencia valida
-- **Test automatizado**: "Test `[nombre]` en `[archivo]` pasa — verifica [que]"
+- **Codigo**: "`src/path/file.tsx:42` — implementa [que]"
+- **Test automatizado**: "Test `[nombre]` en `[archivo:linea]` pasa — verifica [que]"
 - **Screenshot/Visual**: "Screenshot muestra [que se ve] en [donde]"
 - **Log/Output**: "Console output muestra [resultado]"
 - **Manual verification**: "Navegando a [URL], al hacer [accion], se observa [resultado]"
@@ -63,6 +74,7 @@
 - "Se ve bien"
 - "Deberia funcionar"
 - "Es el mismo patron que X"
+- Sin citar archivo:linea
 - Sin evidencia
 
 ## 3. Quality Gates
@@ -137,7 +149,7 @@
 
 ## Reglas de Validacion
 
-1. **Evidencia concreta obligatoria**: Cada AC con test, screenshot, log o verificacion manual documentada.
+1. **Evidencia con archivo:linea obligatoria**: Cada AC debe citar `archivo:linea` donde se cumple. QA no puede marcar CUMPLE sin esta referencia.
 2. **ACs no verificables automaticamente**: Describir verificacion manual paso a paso.
 3. **Drift grave es bloqueante**: Archivos fuera de scope o dependencias no aprobadas requieren aprobacion del humano.
 4. **Quality Gates del proyecto**: Usar los comandos definidos en `project-context.md`, no defaults.
