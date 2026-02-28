@@ -1,6 +1,8 @@
 # NexusAgil
 
-**Metodologia unificada WasiAI para desarrollo de software con IA anti-alucinacion.**
+**Metodologia stack-agnostic para desarrollo de software con IA anti-alucinacion.**
+
+Funciona con cualquier stack: Next.js, Rails, Django, Laravel, FastAPI, o cualquier otro framework.
 
 NexusAgil fusiona dos enfoques complementarios en un solo skill para Claude Code:
 
@@ -144,26 +146,38 @@ Pipeline: Investigacion de causa raiz → Decidir tipo de fix → Implementar �
 
 ## Instalacion
 
-### En un proyecto existente con Claude Code
-
-Copia la carpeta `.claude/skills/nexus-agil/` a tu proyecto:
+### En cualquier proyecto con Claude Code
 
 ```bash
 git clone https://github.com/ferrosasfp/NexusAgile.git /tmp/NexusAgile
 cp -r /tmp/NexusAgile/.claude/skills/nexus-agil/ tu-proyecto/.claude/skills/nexus-agil/
+rm -rf /tmp/NexusAgile
 ```
 
-### Configurar tu proyecto
+Reinicia Claude Code (los skills se cargan al inicio).
 
-1. Copia el template de contexto:
+### Primera sesion — Bootstrap automatico
 
-```bash
-cp tu-proyecto/.claude/skills/nexus-agil/references/project_context_template.md tu-proyecto/project-context.md
+NexusAgil descubre tu proyecto automaticamente. No necesitas editar nada manualmente.
+
+En la primera sesion escribe:
+
+```
+NexusAgil, este es un proyecto nuevo. Lee el codebase y genera project-context.md
 ```
 
-2. Edita `project-context.md` con el stack, arquitectura, comandos y reglas de tu proyecto.
+Claude (como Architect en F0) va a:
+1. Leer tus archivos de dependencias (package.json, Gemfile, requirements.txt, etc.)
+2. Explorar la estructura de carpetas
+3. Leer archivos representativos del proyecto
+4. Generar `project-context.md` con el stack y patrones reales encontrados
+5. Confirmar que esta listo para recibir HUs
 
-3. Reinicia Claude Code (los skills se cargan al inicio).
+**No asume ningun stack.** Funciona con Next.js, Rails, Django, Laravel, FastAPI, Go, o cualquier otro.
+
+### Si ya tienes project-context.md
+
+Si tu proyecto ya tiene un `project-context.md` (de NexusFactory u otro origen), NexusAgil lo lee directamente. No necesitas el Bootstrap.
 
 ---
 
