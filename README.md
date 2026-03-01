@@ -31,11 +31,11 @@ Agents are roles Claude assumes depending on the phase. They are not separate pe
 |---|---|---|
 | **Triage** | Evaluates if a change qualifies as FAST or escalates to LAUNCH/QUALITY | Quick Flow |
 | **Analyst** | Extracts requirements, normalizes User Stories, defines EARS Acceptance Criteria | F0, F1 |
-| **Architect** | Codebase Grounding, SDD, Story File, Code Review | F0, F1, F2, F2.5, CR |
+| **Architect** | Codebase Grounding, SDD, Story File, Code Review — dependency analysis + parallelism proposal (F1) | F0, F1, F2, F2.5, CR |
 | **UX** | Microcopy, user flows, accessibility | F1 (when UI is involved) |
 | **Adversary** | Attacks the solution looking for security and logic flaws | AR, CR |
 | **Dev** | Implements ONLY from the Story File — waves, anti-hallucination | F3 |
-| **SM** | Sprint Planning (incl. dependency analysis + parallelism proposal), Status, Retrospective — Sprint Closure Checklist | Weekly cadence |
+| **SM** | Sprint Planning, Status, Retrospective — Sprint Closure Checklist | Weekly cadence |
 | **QA** | Validates ACs with file:line evidence, Drift Detection | F4 |
 | **Docs** | Documents final artifacts, updates `_INDEX.md`, closes issue in tracker | DONE |
 
@@ -137,8 +137,9 @@ Does NOT have: full SDD, Adversarial Review, formal Code Review, evidence-based 
 
 ```
 [Analyst + Architect] F0: Codebase Grounding + project-context.md
-[Analyst + Architect + UX] F1: Work Item + EARS ACs + Scope IN/OUT
-⛔ GATE 1: HU_APPROVED
+[Analyst + Architect + UX] F1: Work Items + EARS ACs + Scope IN/OUT
+                              + dependency analysis + parallelism proposal
+⛔ GATE 1: HU_APPROVED  ← approves Work Items AND execution order
 [Architect + Adversary] F2: SDD + Constraint Directives + Readiness Check
 ⛔ GATE 2: SPEC_APPROVED
 [Architect] F2.5: Story File (autocontained — Integration Contract if components talk)
@@ -177,7 +178,7 @@ Push
 
 | Gate | Exact text | Context | Effect |
 |---|---|---|---|
-| `HU_APPROVED` | `HU_APPROVED` | After F1 Work Item | Architect starts F2 SDD |
+| `HU_APPROVED` | `HU_APPROVED` | After F1 Work Items + parallelism proposal | Architect starts F2 SDD (parallel where applicable) |
 | `SPEC_APPROVED` | `SPEC_APPROVED` | After F2 SDD | Architect generates Story File (F2.5) |
 | `SPRINT_APPROVED` | `SPRINT_APPROVED` | After Sprint Planning | SM commits artifacts, Architect starts F0 |
 | `REVIEW_APPROVED` | `REVIEW_APPROVED` | After Status Meeting | SM commits status, pipeline continues |
