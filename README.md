@@ -1,354 +1,250 @@
 # NexusAgil
 
-**Metodologia stack-agnostic para desarrollo de software con IA anti-alucinacion.**
+**Stack-agnostic methodology for AI-assisted software development — anti-hallucination by design.**
 
-Funciona con cualquier stack: Next.js, Rails, Django, Laravel, FastAPI, Go, o cualquier otro.
-Se instala en minutos y se integra con Claude Code como un skill.
-
----
-
-## El problema que resuelve
-
-Los AI coding assistants tienden a **alucinar**: inventan imports que no existen, crean patrones diferentes a los del proyecto, asumen APIs que no estan disponibles.
-
-| Problema | Solucion NexusAgil |
-|----------|-------------------|
-| AI inventa imports/modulos | **Codebase Grounding** — leer archivos reales antes de generar |
-| AI crea patrones inconsistentes | **Exemplar Pattern** — referenciar archivos existentes |
-| AI ignora restricciones | **Constraint Directives** — OBLIGATORIO/PROHIBIDO explicitos |
-| Implementacion se desvio del plan | **Drift Detection** — plan vs implementacion en QA |
-| Errores se repiten | **Auto-Blindaje** — documentar cuando ocurren, no al final |
-| Implementacion sin estructura | **Waves** — W0 serial, W1+ paralelo con re-mapeo entre waves |
+Works with any stack: Next.js, Rails, Django, Laravel, FastAPI, Go, or anything else.
+Installs in minutes and integrates with Claude Code as a skill.
 
 ---
 
-## Los 9 Agentes
+## The Problem It Solves
 
-Los agentes son roles que Claude asume segun la fase. No son personas distintas — es Claude cambiando de sombrero. Quien especifica no implementa. Quien implementa no valida.
+AI coding assistants tend to **hallucinate**: they invent imports that don't exist, create patterns inconsistent with the project, and assume APIs that aren't available.
 
-| Agente | Rol | Fases donde actua |
-|--------|-----|-------------------|
-| **Analyst** | Extrae requisitos, normaliza HU, define ACs EARS | F0, F1 |
+| Problem | NexusAgil Solution |
+|---|---|
+| AI invents imports/modules | **Codebase Grounding** — read real files before generating anything |
+| AI creates inconsistent patterns | **Exemplar Pattern** — reference existing files in the codebase |
+| AI ignores restrictions | **Constraint Directives** — explicit REQUIRED/FORBIDDEN per task |
+| Implementation drifted from the plan | **Drift Detection** — plan vs implementation verified in QA |
+| Errors repeat across sessions | **Auto-Blindaje** — document errors immediately when they occur |
+| Unstructured implementation | **Waves** — W0 serial, W1+ parallel with re-mapping between waves |
+| Components talking in incompatible formats | **Integration Contract** — exact request/response format between components, blocking |
+
+---
+
+## The 9 Agents
+
+Agents are roles Claude assumes depending on the phase. They are not separate people — it's Claude switching hats. **Who specifies does not implement. Who implements does not validate.**
+
+| Agent | Role | Active in |
+|---|---|---|
+| **Triage** | Evaluates if a change qualifies as FAST or escalates to LAUNCH/QUALITY | Quick Flow |
+| **Analyst** | Extracts requirements, normalizes User Stories, defines EARS Acceptance Criteria | F0, F1 |
 | **Architect** | Codebase Grounding, SDD, Story File, Code Review | F0, F1, F2, F2.5, CR |
-| **UX** | Microcopy, flujos de usuario, accesibilidad | F1 (si hay UI) |
-| **Adversary** | Ataca la solucion buscando fallas de seguridad y logica | AR, CR |
-| **Dev** | Implementa SOLO desde el Story File, waves, anti-alucinacion | F3 |
-| **SM** | Sprint Planning, Status, Retrospectiva | Cadencia semanal |
-| **QA** | Valida ACs con evidencia archivo:linea, Drift Detection | F4 |
-| **Triage** | Evalua si un cambio califica como FAST o sube de modo | Quick Flow |
-| **Docs** | Documenta artefactos finales, actualiza _INDEX.md | DONE |
+| **UX** | Microcopy, user flows, accessibility | F1 (when UI is involved) |
+| **Adversary** | Attacks the solution looking for security and logic flaws | AR, CR |
+| **Dev** | Implements ONLY from the Story File — waves, anti-hallucination | F3 |
+| **SM** | Sprint Planning, Status, Retrospective | Weekly cadence |
+| **QA** | Validates ACs with file:line evidence, Drift Detection | F4 |
+| **Docs** | Documents final artifacts, updates `_INDEX.md` | DONE |
 
-**Regla de separacion de roles:**
-- Quien **especifica** (Architect) NO implementa (Dev)
-- Quien **implementa** (Dev) NO valida (QA)
-- Quien **revisa adversarialmente** (Adversary) NO implemento el codigo
-
----
-
-## 3 Modos
-
-Al inicio de cada sesion, Claude pregunta:
-
-> **"¿Qué estás construyendo?"**
-> ```
-> 1. FAST    — Un cambio pequeño (fix, estilo, 1-2 archivos)
-> 2. LAUNCH  — Algo nuevo desde cero (MVP, prototipo)
-> 3. QUALITY — Feature para produccion (DB, auth, pagos, usuarios reales)
-> ```
+**Role separation rules:**
+- Who **specifies** (Architect) does NOT implement (Dev)
+- Who **implements** (Dev) does NOT validate (QA)
+- Who **reviews adversarially** (Adversary) did NOT write the code
 
 ---
 
-## FAST — Cambio trivial
+## The Artifacts
 
-**Activar:** `"Quick flow: [cambio]"` / `"Implementa [algo pequeño]"`
+| Artifact | Generated by | Purpose |
+|---|---|---|
+| `project-context.md` | Architect (F0, once) | Real stack, patterns, absolute rules — every agent reads this |
+| Work Item | Analyst + Architect (F1) | User Story + EARS ACs + Scope IN/OUT |
+| SDD | Architect + Adversary (F2) | Technical spec: routes, schema, UI, Constraint Directives, DoD |
+| Story File `story-HU-X.X.md` | Architect (F2.5) | **The most important artifact.** Autocontained contract for Dev. Dev reads ONLY this. |
+| Adversarial Review | Adversary (AR) | Attacks the solution: BLOCKER / MINOR / OK |
+| Code Review | Adversary + QA (CR) | Pattern compliance vs Story File exemplars |
+| Validation Report | QA (F4) | Drift Detection + AC evidence file:line |
+| `sprint-status.yaml` | SM | Live sprint state |
+| `_INDEX.md` | Docs | Historical record of closed HUs |
 
-**Califica como FAST si cumple TODO:**
-- Maximo 2 archivos
-- Menos de 30 lineas de cambio
-- Sin cambios de DB ni migraciones
-- Sin logica de negocio nueva
-- Sin auth ni pagos involucrados
+### The Story File — Why It Matters
 
-**Si no cumple alguno → sube automaticamente a LAUNCH o QUALITY.**
+The Story File is the **contract between Architect and Dev**. Dev reads ONLY this document — no SDD, no original HU, no additional context. It contains:
 
-### Pipeline FAST
+- Goal in 1-2 sentences
+- ACs copied from the approved SDD (not rewritten)
+- Table of files to create/modify, each with a real codebase exemplar
+- **Integration Contract** *(when components communicate)* — exact request/response format. BLOCKING: Dev cannot start without it.
+- Constraint Directives: REQUIRED / FORBIDDEN
+- Waves: W0 serial → W1+ parallel
+- Explicit Out of Scope
+- Escalation Rule: if something is not in this file, Dev stops and asks Architect
+
+**⚠️ No Story File = No coding. No exceptions.**
+
+---
+
+## 3 Modes
+
+At the start of each session, Claude evaluates what you are building:
 
 ```
-[Triage] evalua si califica como FAST
-    |
-    v
-[Architect] Codebase Grounding minimo
-    Lee el archivo a modificar
-    Identifica el patron existente
-    |
-    v
-[Dev] implementa el cambio
-    Sigue el patron encontrado
-    No inventa nada nuevo
-    |
-    v
-[Dev] verificacion: typecheck/build pasa
-    |
-    v
+1. FAST    — Small change (fix, style, 1-2 files)
+2. LAUNCH  — Something new from scratch (MVP, prototype)
+3. QUALITY — Production feature (DB, auth, payments, real users)
+```
+
+---
+
+## FAST — Trivial change
+
+**Activate:** `"Quick flow: [change]"` / `"Implement [small thing]"`
+
+**Qualifies as FAST only if ALL are true:**
+- Max 2 files
+- Less than 30 lines of change
+- No DB changes or migrations
+- No new business logic
+- No auth or payments involved
+
+If any condition fails → automatically escalates to LAUNCH or QUALITY.
+
+```
+[Triage] → [Architect] minimal Codebase Grounding → [Dev] → Push
+```
+
+No formal gates. No story file. No AR or formal QA.
+
+---
+
+## LAUNCH — MVP / Prototype
+
+**Activate:** `"NexusAgil, LAUNCH mode: [MVP description]"`
+
+**Use when:** project from scratch, MVP for demo or first version, not in production yet.
+
+```
+[Architect] F0 Bootstrap → [Analyst] F1 HU list
+    ↓
+⛔ GATE: LAUNCH_APPROVED
+    ↓
+[Architect] F2 Story File (simplified) → [Dev] F3 Waves → [QA] Light QA → Push
+```
+
+Has: Codebase Grounding, Story Files, human gate, anti-hallucination, waves.
+Does NOT have: full SDD, Adversarial Review, formal Code Review, evidence-based QA.
+
+---
+
+## QUALITY — Production
+
+**Activate:** `"NexusAgil, process this HU: [description]"`
+
+**Always use when:** going to real users, has DB / auth / payments / sensitive data, a bug has real cost.
+
+```
+[Analyst + Architect] F0: Codebase Grounding + project-context.md
+[Analyst + Architect + UX] F1: Work Item + EARS ACs + Scope IN/OUT
+⛔ GATE 1: HU_APPROVED
+[Architect + Adversary] F2: SDD + Constraint Directives + Readiness Check
+⛔ GATE 2: SPEC_APPROVED
+[Architect] F2.5: Story File (autocontained — Integration Contract if components talk)
+    ⚠️  NO STORY FILE = NO CODING
+[Dev] F3: Anti-Hallucination Protocol + Waves + Auto-Blindaje
+[Adversary] Adversarial Review → BLOCKER / MINOR / OK
+[Adversary + QA] Code Review → MUST FIX / SUGGESTION
+[QA] F4: Drift Detection + AC evidence file:line + build clean
+[Docs] DONE → _INDEX.md
 Push
 ```
 
-**Agentes:** Triage → Architect (minimo) → Dev
-
-**Sin gates formales. Sin story file. Sin AR ni QA formal.**
-
 ---
 
-## LAUNCH — MVP / Prototipo
-
-**Activar:** `"NexusAgil, modo LAUNCH: [descripcion del MVP]"`
-
-**Usar cuando:**
-- Proyecto nuevo desde cero
-- MVP para demo, pitch o primera version
-- No va a produccion todavia (o es la v1)
-- Quieres velocidad con estructura basica
-
-### Pipeline LAUNCH
-
-```
-[Architect] F0: Bootstrap de Proyecto
-    Lee codebase real (dependencias, estructura, archivos)
-    Genera project-context.md con stack y patrones reales
-    Confirma al humano lo que encontro
-    |
-    v
-[Analyst] F1: Lista de HUs del MVP
-    Normaliza lo que el humano quiere construir
-    Genera lista de HUs con titulo + objetivo + estimacion
-    Presenta al humano para confirmar scope
-    |
-    v
-⛔ GATE: humano escribe LAUNCH_APPROVED
-    |
-    v
-[Architect] F2: Story File por HU (simplificado)
-    Lee archivos relacionados (Codebase Grounding)
-    Genera story file con: objetivo, ACs, archivos, exemplars, waves
-    Sin SDD completo ni Constraint Directives extensas
-    |
-    v
-[Dev] F3: Implementacion por waves
-    Lee el Story File completo
-    Anti-Hallucination Protocol: lee exemplar antes de cada tarea
-    Implementa W0 serial, W1+ paralelo
-    Re-mapeo ligero entre waves
-    Auto-Blindaje si hay errores
-    |
-    v
-[Dev / QA] QA ligero
-    Build/typecheck limpio
-    ACs verificados: CUMPLE / NO CUMPLE
-    Sin evidencia archivo:linea (eso es QUALITY)
-    |
-    v
-Push — repetir F2→F3→QA por cada HU
-```
-
-**Agentes:** Architect → Analyst → (GATE) → Architect → Dev → QA ligero
-
-**Tiene:** Codebase Grounding, Story Files, gate humano, anti-alucinacion, waves
-**No tiene:** Work Item formal, SDD completo, Adversarial Review, Code Review formal, QA con evidencia
-
----
-
-## QUALITY — Produccion
-
-**Activar:** `"NexusAgil, procesa esta HU: [descripcion]"`
-
-**Usar siempre cuando:**
-- Va a usuarios reales
-- Tiene DB, auth, pagos o datos sensibles
-- Equipo de 2+ personas
-- Un bug tiene costo real (datos, dinero, reputacion)
-
-### Pipeline QUALITY
-
-```
-[Analyst + Architect] F0: Contexto
-    Verifica si existe project-context.md
-    Si NO existe: Bootstrap (lee codebase, genera project-context.md)
-    Codebase Grounding inicial
-    Smart Sizing: clasifica la HU (full / bugfix / mini / patch)
-    |
-    v
-[Analyst + Architect + UX] F1: Discovery
-    Normaliza la HU en un Work Item estructurado
-    Define ACs en formato EARS (Event/State/Unwanted-driven)
-    Define Scope IN y OUT
-    Presenta al humano
-    |
-    v
-⛔ GATE 1: humano escribe HU_APPROVED
-    (solo este texto exacto — "ok", "dale", "si" NO cuentan)
-    |
-    v
-[Architect + Adversary] F2: SDD
-    Codebase Grounding profundo (lee archivos relacionados)
-    Genera Context Map con archivos leidos y patrones extraidos
-    Genera SDD con: rutas, schema DB, componentes UI, DoD
-    Genera Constraint Directives: OBLIGATORIO / PROHIBIDO
-    Implementation Readiness Check
-    |
-    v
-⛔ GATE 2: humano escribe SPEC_APPROVED
-    (solo este texto exacto)
-    |
-    v
-[Architect] F2.5: Story File
-    Contrato autocontenido para Dev
-    Incluye: objetivo, ACs, archivos, exemplars con codigo real,
-    Constraint Directives, waves, out of scope, escalation rule
-    Dev SOLO lee este archivo — nada mas
-    |
-    v
-[Dev] F3: Implementacion
-    Lee Story File completo
-    Anti-Hallucination Protocol antes de cada tarea:
-      - Lee el exemplar referenciado
-      - Verifica que los imports existen
-      - Sigue el patron del exemplar
-    Implementa W0 serial, W1+ paralelo
-    Re-mapeo ligero entre waves
-    Verificacion incremental al completar cada wave
-    Auto-Blindaje si hay errores (documenta inmediatamente)
-    |
-    v
-[Adversary] Adversarial Review
-    Ataca la solucion buscando fallas reales:
-      - Auth bypass
-      - SSRF
-      - Race conditions
-      - API keys expuestas
-      - Hardcodes
-      - Datos simulados en produccion
-    Clasifica: BLOQUEANTE / MENOR / OK
-    BLOQUEANTEs → Dev corrige → Adversary re-revisa
-    |
-    v
-[Adversary + QA] Code Review
-    Valida patrones seguidos vs exemplars del Story File
-    Naming consistente con el proyecto
-    Sin logica duplicada
-    Sin archivos fuera de scope
-    Clasifica: DEBE CORREGIR / SUGERENCIA
-    |
-    v
-[QA] F4: Validacion
-    Drift Detection: archivos creados/modificados vs esperados
-    Verifica cada AC con evidencia obligatoria:
-      ✅ CUMPLE — src/archivo.tsx:42
-      ❌ NO CUMPLE — no encontrado en codebase
-      ⚠️ PARCIAL — src/archivo.tsx:42 (razon)
-    Quality Gates: build limpio, sin imports inexistentes
-    |
-    v
-[Docs] DONE
-    Genera reporte final
-    Actualiza doc/sdd/_INDEX.md
-    |
-    v
-Push
-```
-
-**Agentes:** Analyst + Architect + UX → (GATE 1) → Architect + Adversary → (GATE 2) → Architect → Dev → Adversary → Adversary + QA → QA → Docs
-
----
-
-## Tabla comparativa de modos
+## Mode Comparison
 
 | | FAST | LAUNCH | QUALITY |
 |---|---|---|---|
-| **Para que** | Fix trivial | MVP / prototipo | Produccion |
-| **Archivos** | 1-2 | multiples | multiples |
-| **Codebase Grounding** | minimo | completo | profundo |
-| **Work Item formal** | ❌ | ❌ | ✅ |
-| **ACs EARS** | ❌ | basicos | ✅ |
-| **SDD completo** | ❌ | ❌ | ✅ |
-| **Constraint Directives** | ❌ | ❌ | ✅ |
-| **Story File** | ❌ | simplificado | autocontenido |
+| **For** | Trivial fix | MVP / prototype | Production |
+| **Codebase Grounding** | minimal | complete | deep |
+| **Formal Work Item** | ❌ | ❌ | ✅ |
+| **Full SDD** | ❌ | ❌ | ✅ |
+| **Story File** | ❌ | simplified | autocontained |
+| **Integration Contract** | ❌ | if needed | ✅ BLOCKING |
 | **Gate HU_APPROVED** | ❌ | ❌ | ✅ |
 | **Gate LAUNCH_APPROVED** | ❌ | ✅ | ❌ |
 | **Gate SPEC_APPROVED** | ❌ | ❌ | ✅ |
 | **Adversarial Review** | ❌ | ❌ | ✅ |
-| **Code Review formal** | ❌ | ❌ | ✅ |
-| **QA con evidencia** | ❌ | ❌ | ✅ |
-| **Anti-alucinacion** | parcial | ✅ | ✅ |
-| **Waves** | ❌ | ✅ | ✅ |
-| **Auto-Blindaje** | ❌ | ✅ | ✅ |
-| **Velocidad** | ⚡⚡⚡ | ⚡⚡ | ⚡ |
-| **Seguridad** | basica | media | alta |
+| **QA with evidence** | ❌ | ❌ | ✅ |
+| **Speed** | ⚡⚡⚡ | ⚡⚡ | ⚡ |
+| **Safety** | basic | medium | high |
 
 ---
 
-## Instalacion
+## The 2 Gates (QUALITY mode)
 
-### En cualquier proyecto con Claude Code
+| Gate | Exact text | What does NOT activate it |
+|---|---|---|
+| **GATE 1** | `HU_APPROVED` | "ok", "sure", "yes", "go", "sounds good" |
+| **GATE 2** | `SPEC_APPROVED` | "implement it", "start", "go ahead", anything else |
+
+Gates exist to ensure the human has **actually read** the artifact — not for the AI to assume they did.
+
+---
+
+## Installation
 
 ```bash
 git clone https://github.com/ferrosasfp/NexusAgile.git /tmp/NexusAgile
-cp -r /tmp/NexusAgile/.claude/skills/nexus-agil/ tu-proyecto/.claude/skills/nexus-agil/
+cp -r /tmp/NexusAgile/.claude/skills/nexus-agil/ your-project/.claude/skills/nexus-agil/
 rm -rf /tmp/NexusAgile
 ```
 
-Reinicia Claude Code. Los skills se cargan automaticamente al inicio.
+Restart Claude Code. Skills load automatically at startup.
 
-### Primera sesion — Bootstrap automatico
-
+**First session — automatic bootstrap:**
 ```
-NexusAgil, este es un proyecto nuevo. Lee el codebase y genera project-context.md
+NexusAgil, this is a new project. Read the codebase and generate project-context.md
 ```
 
-Claude descubre solo: lenguaje, framework, arquitectura, comandos, patrones.
-No necesitas editar nada manualmente.
-
-### Si usas NexusFactory
-
-NexusAgil ya viene preinstalado. No necesitas instalarlo por separado.
+Claude discovers on its own: language, framework, architecture, commands, patterns. No manual editing needed.
 
 ---
 
-## Estructura del skill
+## Skill Structure
 
 ```
 .claude/skills/nexus-agil/
-+-- SKILL.md                             # Pipeline completo, 3 modos, reglas globales
-+-- references/
-    +-- agents_roster.md                 # 9 agentes con personalidad y responsabilidades
-    +-- sdd_template.md                  # Templates SDD (FULL / BUGFIX / MINI)
-    +-- story_file_template.md           # Contrato Architect-Dev
-    +-- adversarial_review_checklist.md  # 8 categorias de ataque del Adversary
-    +-- validation_report_template.md    # QA: drift + ACs + quality gates
-    +-- launch_flow.md                   # Pipeline detallado modo LAUNCH
-    +-- quick_flow.md                    # Pipeline detallado modo FAST
-    +-- sprint_cadence.md                # Planning/Status/Retro del SM
-    +-- project_context_template.md      # Template stack-agnostic para project-context.md
+├── SKILL.md                             # Full pipeline, 3 modes, global rules
+└── references/
+    ├── agents_roster.md                 # 9 agents with personality and responsibilities
+    ├── sdd_template.md                  # SDD templates (FULL / BUGFIX / MINI)
+    ├── story_file_template.md           # Architect-Dev contract (incl. Integration Contract)
+    ├── adversarial_review_checklist.md  # 8 attack categories for the Adversary
+    ├── validation_report_template.md    # QA: drift + ACs + quality gates
+    ├── launch_flow.md                   # Detailed LAUNCH mode pipeline
+    ├── quick_flow.md                    # Detailed FAST mode pipeline
+    ├── sprint_cadence.md                # SM Planning / Status / Retro
+    └── project_context_template.md      # Stack-agnostic project-context template
 ```
 
 ---
 
-## Relacion con NexusFactory
+## Relationship with NexusFactory
 
 ```
-NexusFactory  =  template de proyecto (stack, MCPs, estructura)
-             +   NexusAgil preinstalado
+NexusFactory  =  opinionated project template (stack + structure)
+             +   NexusAgil preinstalled (stack-aware version)
 
-NexusAgil     =  metodologia standalone (cualquier proyecto)
+NexusAgil     =  standalone methodology (any stack)
 ```
 
-NexusAgil funciona sin NexusFactory.
-NexusFactory incluye NexusAgil por defecto con los 3 modos disponibles.
+**Key difference:**
+- **NexusAgil standalone** (this repo) is fully stack-agnostic. It discovers and studies the project stack at the beginning of each session to generate `project-context.md`.
+- **NexusAgil inside NexusFactory** comes pre-configured for the NexusFactory Golden Path (Next.js + Supabase + Viem + Foundry). The `project-context.md` is already provided — no bootstrap needed.
+
+NexusAgil works without NexusFactory.
+NexusFactory includes NexusAgil by default.
+
+→ [NexusFactory repo](https://github.com/ferrosasfp/NexusFactory)
 
 ---
 
-## Creditos
+## Credits
 
-Metodologia creada por Fernando Rosas.
-Fusiona Nexus SDD Workflow y practicas agiles con roles especializados de IA.
+Methodology created by [Fernando Rosas](https://github.com/ferrosasfp).
+Merges Nexus SDD Workflow and agile practices with specialized AI roles.
 
 MIT License
