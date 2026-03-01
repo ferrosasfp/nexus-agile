@@ -35,7 +35,7 @@ Agents are roles Claude assumes depending on the phase. They are not separate pe
 | **UX** | Microcopy, user flows, accessibility | F1 (when UI is involved) |
 | **Adversary** | Attacks the solution looking for security and logic flaws | AR, CR |
 | **Dev** | Implements ONLY from the Story File — waves, anti-hallucination | F3 |
-| **SM** | Sprint Planning, Status, Retrospective — Sprint Closure Checklist | Weekly cadence |
+| **SM** | Sprint Planning (incl. dependency analysis + parallelism proposal), Status, Retrospective — Sprint Closure Checklist | Weekly cadence |
 | **QA** | Validates ACs with file:line evidence, Drift Detection | F4 |
 | **Docs** | Documents final artifacts, updates `_INDEX.md`, closes issue in tracker | DONE |
 
