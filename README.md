@@ -186,6 +186,8 @@ Push
 
 **Universal rule:** Only the exact text activates the gate. "yes", "ok", "go", "sounds good", "start" → do NOT activate any gate.
 
+**Flow rule:** Between gates, the pipeline runs automatically. The agent never asks "shall I continue?" or "ready to proceed?" between phases. If the human answers "yes" to something that wasn't a gate, it means the agent asked unnecessarily — that is a process error.
+
 Gates exist to ensure the human has **actually read** the artifact — not for the AI to assume they did.
 
 ---
