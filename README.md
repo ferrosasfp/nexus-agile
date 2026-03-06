@@ -329,21 +329,40 @@ Si el SM no encuentra problemas, dice explícitamente: "listo para SPEC_APPROVED
 - Decide las prioridades del backlog
 - Da el go/no-go en decisiones de negocio
 
-### Scrum Master + Tech Lead (SM)
-- Facilita el proceso
-- Escribe y valida SDDs (incluyendo Wave 0 y validación adversarial)
-- Ejecuta Security Gate post-ejecución
-- Orquesta los sub-agentes (define paralelismo vs secuencial)
-- Actualiza Linear y la documentación
+### Scrum Master / Orquestador (SM)
+- Escribe artefactos (Work Items, SDDs)
+- **Nunca se auto-evalúa** — cada artefacto pasa por un sub-agente antes del PO
+- Orquesta los 6 sub-agentes (define orden, paralelismo, re-ejecución)
+- Presenta resultados + reportes de sub-agentes al PO
+- Actualiza issue tracker y documentación
 
-### Agentes Ejecutores (Sub-agentes especializados)
-- Ejecutan una sola tarea a la vez
-- **Re-validan Wave 0 antes de ejecutar** (defensa contra errores del SM)
-- Siguen el SDD al pie de la letra
-- Ejecutan build gate al final de cada wave
-- Reportan resultado y commit hash
-- No toman decisiones de diseño — escalan si hay ambigüedad
-- Si Wave 0 detecta discrepancia → STOP y reportar (no ejecutar)
+### Los 6 Sub-agentes Especializados
+
+Cada sub-agente tiene un **role skill** (`roles/*.md`) con: misión, checklist, formato de output, y lo que NO debe hacer.
+
+| # | Sub-agente | Misión | Cuándo | Role Skill |
+|---|-----------|--------|--------|-----------|
+| 1 | **Requirements Reviewer** | Encontrar lo que FALTA en el Work Item | Pre HU_APPROVED | `roles/requirements-reviewer.md` |
+| 2 | **Spec Reviewer** | Encontrar errores técnicos en el SDD (Wave 0 + coherencia) | Pre SPEC_APPROVED | `roles/spec-reviewer.md` |
+| 3 | **Builder** | Implementar EXACTAMENTE el SDD, nada más | Post SPRINT_APPROVED | `roles/builder.md` |
+| 4 | **Logic Auditor** | ¿El código hace lo correcto? Buscar bugs lógicos | Post Builder | `roles/logic-auditor.md` |
+| 5 | **Security Reviewer** | ¿El código es seguro? Buscar vulnerabilidades | Post Builder (solo QUALITY) | `roles/security-reviewer.md` |
+| 6 | **QA Verifier** | ¿Los ACs se cumplen? Con evidencia archivo:línea | Post Auditor/Security | `roles/qa-verifier.md` |
+
+**Principio clave: separación de responsabilidades**
+- Quien **escribe** (SM) no valida su propio trabajo
+- Quien **implementa** (Builder) no audita su código
+- Quien **audita lógica** (Auditor) no busca vulnerabilidades (Security)
+- Quien **verifica ACs** (QA) no opina sobre diseño
+
+**Cuántos sub-agentes por clasificación:**
+
+| Clasificación | Sub-agentes activos |
+|--------------|-------------------|
+| FAST-FIX | Solo Builder |
+| HU-MINOR | Builder + QA |
+| HU-MAJOR | Req Reviewer + Spec Reviewer + Builder + Logic Auditor + QA |
+| QUALITY | Los 6 completos |
 
 ---
 
@@ -371,6 +390,16 @@ Si el SM no encuentra problemas, dice explícitamente: "listo para SPEC_APPROVED
 NexusAgil nació durante el desarrollo de WasiAI en marzo 2026, cuando quedó claro que Scrum puro no era suficiente para coordinar un equipo donde los ejecutores son agentes de IA. La metodología evolucionó sprint a sprint, incorporando lecciones de cada retro.
 
 ### Changelog
+
+**v1.3** (marzo 2026) — Arquitectura de Sub-agentes Especializados
+- 6 sub-agentes con role skills dedicados (`roles/*.md`)
+- Orquestador nunca se auto-evalúa — cada artefacto validado por sub-agente independiente
+- Requirements Reviewer valida Work Items antes de HU_APPROVED
+- Spec Reviewer ejecuta Wave 0 + coherencia antes de SPEC_APPROVED
+- Logic Auditor separado de Security Reviewer (corrección lógica vs vulnerabilidades)
+- QA Verifier con evidencia archivo:línea obligatoria
+- Tabla de sub-agentes por clasificación (FAST: 1, MINOR: 2, MAJOR: 5, QUALITY: 6)
+- Comparación con MetaGPT/ChatDev/CrewAI documentada
 
 **v1.2** (marzo 2026) — Post Quality Fixes Sprint
 - Wave 0.3 ampliado: validación de código contra tipos reales (0.3a), encoding (0.3b), seguridad contratos (0.3c)
