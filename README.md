@@ -1,458 +1,452 @@
-# NexusAgil
+# 🧠 NexusAgil
 
-> Scrum + Spec-Driven Development para equipos que trabajan con agentes de IA.
+### The methodology that stops AI agents from hallucinating your codebase into oblivion.
 
----
-
-## ¿Qué es NexusAgil?
-
-NexusAgil es una metodología de desarrollo ágil diseñada para equipos donde los ejecutores son agentes de IA. Toma lo mejor de Scrum como contenedor de trabajo, y agrega Spec-Driven Development como motor de ejecución.
-
-**Principio central:**
-
-> Un agente sin spec es un agente sin rumbo. Un spec sin validación adversarial es un spec optimista. NexusAgil exige ambos.
+[![Version](https://img.shields.io/badge/version-1.3-blue)](https://github.com/ferrosasfp/NexusAgile)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Agents](https://img.shields.io/badge/sub--agents-6-orange)](roles/)
 
 ---
 
-## La pregunta que responde
+## The Problem
 
-*¿Por qué Scrum puro no funciona con agentes de IA?*
+You give an AI agent a task. It writes code. The code looks right. You ship it.
 
-Scrum asume ejecutores humanos que pueden improvisar, pedir clarificaciones, y adaptar el trabajo en tiempo real. Los agentes de IA no improvisan bien — necesitan instrucciones precisas o alucinarán para llenar los vacíos.
+Then you discover:
+- 🔴 It invented an API that doesn't exist
+- 🔴 It "fixed" a bug that was already fixed 3 commits ago
+- 🔴 It compared a keccak256 hash to a raw string and called it done
+- 🔴 It passed its own code review (because it reviewed its own work)
 
-NexusAgil resuelve esto con dos capas:
+**AI agents hallucinate. The more complex the task, the worse it gets.**
 
-1. **Scrum** — el contenedor: sprints, backlog, review, retro
-2. **Spec-Driven Development** — el motor: nada se ejecuta sin un spec aprobado
+MetaGPT, ChatDev, and CrewAI proved that multi-agent systems work. But they all share the same flaw: **they trust their own output.** The architect writes the spec, the coder implements it, the reviewer approves it — all from the same context window, all inheriting the same blind spots.
+
+NexusAgil fixes this with one principle:
+
+> **No agent validates its own work. Ever.**
 
 ---
 
-## Los 5 Gates Formales
+## The Solution
 
-Todo trabajo pasa por gates explícitos. El gate bloquea la ejecución hasta recibir aprobación.
+NexusAgil is a development methodology for teams where AI agents are the executors. It combines:
+
+- **Scrum** as the work container (sprints, backlog, review, retro)
+- **Spec-Driven Development** as the execution engine (nothing runs without an approved spec)
+- **6 specialized sub-agents** with strict separation of responsibilities
+- **5 formal gates** where a human approves before anything advances
+- **Wave 0 pre-flight checks** that catch hallucinations before they become commits
+
+### Real Results
+
+Built and battle-tested on [WasiAI](https://wasiai-v2.vercel.app) — an on-chain AI agent marketplace on Avalanche:
+
+| Metric | Value |
+|--------|-------|
+| Issues completed | 49+ across 15 sprints |
+| Smart contract deploys | 4 versions, zero exploits |
+| Hallucinations caught by Wave 0 | 2 of 6 SDDs were for already-implemented fixes |
+| Critical encoding bug caught | `indexed string` returns keccak256, not raw string |
+| Parallel agent execution | 4 sub-agents running simultaneously, zero merge conflicts |
+
+---
+
+## How It Works
 
 ```
-HU_APPROVED
-    ↓
-SPEC_APPROVED
-    ↓
-SPRINT_APPROVED
-    ↓
-REVIEW_APPROVED
-    ↓
-RETRO_APPROVED
+You write the WHAT → AI writes the HOW → Different AI validates → You approve → Different AI builds → Different AI audits → Different AI verifies
 ```
 
-### HU_APPROVED
-El Product Owner aprueba la Historia de Usuario. Define QUÉ se construye y POR QUÉ importa.
-Sin este gate, no se escribe ningún spec.
+### The 6 Sub-agents
 
-### SPEC_APPROVED
-El Product Owner aprueba el Story-Driven Document (SDD). Define CÓMO se construye.
-El SDD es la fuente de verdad absoluta para el agente ejecutor.
-Sin este gate, el agente no toca código.
+No agent wears two hats. Each one has a single job, a concrete checklist, and clear boundaries.
 
-### SPRINT_APPROVED
-El Product Owner aprueba el plan completo del sprint. Fija el scope, las prioridades y el orden de ejecución.
-Sin este gate, no se lanza ningún sub-agente.
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         YOU (Product Owner)                      │
+│                    Approve gates. Make decisions.                 │
+└──────────┬──────────────────────────────────────┬───────────────┘
+           │                                      │
+           ▼                                      ▼
+┌─────────────────────┐              ┌─────────────────────┐
+│   SM / Orchestrator  │              │   Gate: HU_APPROVED  │
+│   Writes artifacts   │──────────────│   Gate: SPEC_APPROVED│
+│   Never self-reviews │              │   Gate: SPRINT_APPROVED
+│   Coordinates agents │              │   Gate: REVIEW_APPROVED
+└──────────┬──────────┘              │   Gate: RETRO_APPROVED│
+           │                         └─────────────────────┘
+           ▼
+┌──────────────────────────────────────────────────────────────────┐
+│                        6 SPECIALIZED SUB-AGENTS                  │
+│                                                                  │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
+│  │ 1. Req       │  │ 2. Spec      │  │ 3. Builder   │          │
+│  │ Reviewer     │  │ Reviewer     │  │              │          │
+│  │ "What's      │  │ "Does this   │  │ "Build       │          │
+│  │  missing?"   │  │  compile?"   │  │  exactly     │          │
+│  │              │  │              │  │  this."      │          │
+│  │ Pre-HU gate  │  │ Pre-SPEC gate│  │ Post-SPRINT  │          │
+│  └──────────────┘  └──────────────┘  └──────┬───────┘          │
+│                                              │                   │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────▼───────┐          │
+│  │ 4. Logic     │  │ 5. Security  │  │ 6. QA        │          │
+│  │ Auditor      │  │ Reviewer     │  │ Verifier     │          │
+│  │ "Is this     │  │ "Is this     │  │ "Prove it    │          │
+│  │  correct?"   │  │  safe?"      │  │  works."     │          │
+│  │              │  │              │  │              │          │
+│  │ Post-build   │  │ QUALITY only │  │ file:line    │          │
+│  └──────────────┘  └──────────────┘  └──────────────┘          │
+└──────────────────────────────────────────────────────────────────┘
+```
 
-### REVIEW_APPROVED
-El Product Owner aprueba los entregables del sprint después de la demo.
-Sin este gate, el sprint no se cierra y el trabajo no se considera DONE.
+| # | Agent | Mission | Checks |
+|---|-------|---------|--------|
+| 1 | **Requirements Reviewer** | Find what's MISSING in the spec | Edge cases, conflicting ACs, already-implemented features |
+| 2 | **Spec Reviewer** | Find technical errors in the SDD | Wave 0 pre-flight, type compatibility, encoding correctness |
+| 3 | **Builder** | Implement EXACTLY the SDD | Re-validates Wave 0, build gate per wave, stops on failure |
+| 4 | **Logic Auditor** | Find logic bugs | AC traceability, off-by-one, race conditions, edge cases |
+| 5 | **Security Reviewer** | Find vulnerabilities | Auth bypass, injection, reentrancy, secret exposure |
+| 6 | **QA Verifier** | Prove ACs are met | Drift detection, file:line evidence, build + test execution |
 
-### RETRO_APPROVED
-El Product Owner aprueba la retrospectiva. Captura lecciones aprendidas y acciones para el siguiente sprint.
-Cierra el sprint formalmente.
+Each agent has a dedicated **role skill** in [`roles/`](roles/) with its full checklist and output format.
 
 ---
 
-## Clasificación de Trabajo
+## Quick Start
 
-No todo el trabajo necesita todos los gates. La clasificación determina el camino:
+### Install in your project
 
-| Tipo | Descripción | Gates requeridos |
-|---|---|---|
-| **FAST-FIX** | Corrección puntual, alcance mínimo, riesgo bajo | SPRINT_APPROVED → ejecuta directo |
-| **HU-MINOR** | Feature pequeña, bien entendida, sin impacto arquitectural | SPRINT_APPROVED → ejecuta directo |
-| **HU-MAJOR** | Feature significativa, requiere diseño previo | HU_APPROVED → SPEC_APPROVED → ejecuta |
-| **QUALITY** | Cambio arquitectural, seguridad crítica, o decisión técnica de alto impacto | Todos los gates |
+```bash
+# Option 1: Git submodule (recommended)
+git submodule add https://github.com/ferrosasfp/NexusAgile.git .claude/skills/nexus-agil
+
+# Option 2: Copy
+git clone https://github.com/ferrosasfp/NexusAgile.git /tmp/na
+mkdir -p .claude/skills/nexus-agil
+cp /tmp/na/SKILL.md .claude/skills/nexus-agil/
+cp -r /tmp/na/roles /tmp/na/references .claude/skills/nexus-agil/
+rm -rf /tmp/na
+```
+
+### Activate
+
+Just mention "NexusAgil" in your conversation with the AI agent. It reads `SKILL.md` and follows the checklist.
+
+```
+You: "NexusAgil — here are 6 security issues from Linear to fix"
+Agent: [reads SKILL.md] → classifies as QUALITY → starts Sprint pipeline
+```
+
+### The 5 Gates
+
+Type the exact text to advance. Nothing else works — "ok", "sure", "go" are ignored.
+
+```
+HU_APPROVED      → Approve the work items
+SPEC_APPROVED    → Approve the technical spec (SDD)
+SPRINT_APPROVED  → Approve the sprint plan
+REVIEW_APPROVED  → Approve the deliverables
+RETRO_APPROVED   → Close the sprint
+```
 
 ---
 
-## Spec-Driven Development (SDD)
+## How NexusAgil Compares
 
-El corazón de NexusAgil es el Story-Driven Document (SDD). Es el spec que el agente ejecutor seguirá al pie de la letra.
+| Feature | MetaGPT | ChatDev | CrewAI | **NexusAgil** |
+|---------|---------|---------|--------|---------------|
+| Multi-agent | ✅ | ✅ | ✅ | ✅ |
+| Human gates | ❌ | ❌ | ❌ | **✅ 5 formal gates** |
+| Anti-hallucination | SOPs in prompts | None | None | **Wave 0 + Codebase Grounding + double validation** |
+| Agent self-review | ✅ (same context) | ✅ | ✅ | **❌ Never. Separate agents.** |
+| Rollback plan | ❌ | ❌ | ❌ | **✅ Mandatory in every SDD** |
+| Security review | ❌ | ❌ | ❌ | **✅ Dedicated Security Reviewer** |
+| Artifact persistence | ❌ | ❌ | ❌ | **✅ 10 artifacts per issue in `.nexus/`** |
+| Build verification | End only | ❌ | ❌ | **✅ Per-wave build gate** |
+| Parallel execution | ❌ | ❌ | ✅ | **✅ With disjoint-file verification** |
+| Stack agnostic | Python only | Python only | Python only | **✅ Any stack** |
+| Works with | MetaGPT framework | ChatDev framework | CrewAI framework | **Claude, GPT, Gemini, any LLM** |
 
-### Estructura de un SDD
+**The key difference:** Other frameworks are code libraries. NexusAgil is a methodology. It works with any AI agent, any stack, any tool. You don't install a framework — you install a way of working.
+
+---
+
+## The Sprint Cycle
+
+```
+ 1. SM presents prioritized backlog
+ 2. [Requirements Reviewer] validates work items
+ 3. You approve → HU_APPROVED
+ 4. SM writes SDDs (technical specs)
+ 5. [Spec Reviewer] validates SDDs (Wave 0 + coherence)
+ 6. You review SDDs + Spec Reviewer report → SPEC_APPROVED
+ 7. SM presents sprint plan → SPRINT_APPROVED
+ 8. [Builders] implement (parallel if disjoint files)
+ 9. [Logic Auditor] reviews each diff
+10. [Security Reviewer] reviews (QUALITY only)
+11. [QA Verifier] verifies ACs with file:line evidence
+12. SM presents review with all reports → REVIEW_APPROVED
+13. Retro → RETRO_APPROVED
+14. Sprint closed
+```
+
+---
+
+## Work Classification
+
+Not everything needs the full pipeline. NexusAgil scales down for simple work:
+
+| Type | What it is | Agents used | Gates |
+|------|-----------|-------------|-------|
+| **FAST-FIX** | 1-2 files, <30 lines, no DB | Builder only | SPRINT_APPROVED |
+| **HU-MINOR** | Small feature, well understood | Builder + QA | SPRINT_APPROVED |
+| **HU-MAJOR** | Significant feature, design needed | 5 of 6 agents | HU + SPEC + SPRINT |
+| **QUALITY** | Security, contracts, architecture | All 6 agents | All 5 gates |
+
+**When in doubt → QUALITY.** Overkill is better than a vulnerability in production.
+
+---
+
+## Wave 0 — The Anti-Hallucination Shield
+
+Before any code is written, Wave 0 verifies the spec against reality:
+
+| Check | What it catches |
+|-------|----------------|
+| **0.1** Fix already exists? | Prevents duplicate work (saved 2 of 6 SDDs in first sprint) |
+| **0.2** Files exist? | Catches references to nonexistent paths |
+| **0.3a** Code compiles against real types? | Catches type mismatches before implementation |
+| **0.3b** Encoding correct? | Catches indexed event keccak256 vs raw string (caught 1 critical bug) |
+| **0.3c** Security risks documented? | Catches reentrancy, overflow, front-running |
+| **0.4** Dependencies resolved? | Prevents blocked execution |
+| **0.5** No ambiguities? | Prevents Builder improvisation |
+
+Wave 0 runs **twice**: once by the Spec Reviewer (before SPEC_APPROVED), and again by the Builder (before implementation). If the orchestrator hallucinated in the SDD, the Builder catches it.
+
+---
+
+## Artifact Persistence
+
+Every decision, review, and validation is persisted. Nothing lives in chat history alone.
+
+```
+your-project/
+└── .nexus/
+    ├── _INDEX.md                        ← Historical registry
+    ├── project-context.md               ← Project stack + patterns
+    └── sprints/
+        └── NNN-titulo/
+            ├── work-item.md             ← What to build + ACs
+            ├── requirements-review.md   ← What was missing
+            ├── sdd.md                   ← How to build it
+            ├── spec-review.md           ← What was wrong in the spec
+            ├── story-file.md            ← Builder's contract
+            ├── build-report.md          ← What was built + commits
+            ├── logic-audit.md           ← Logic bugs found
+            ├── security-review.md       ← Vulnerabilities found
+            ├── qa-report.md             ← ACs verified with evidence
+            └── report.md               ← Final summary
+```
+
+**Why this matters:** When something breaks in production 3 months later, you can trace back to exactly what was specified, who validated it, what the auditor found, and what QA verified. No "I think we decided..." — it's all in `.nexus/`.
+
+---
+
+## SDD Structure
+
+The Story-Driven Document is the single source of truth for every agent:
 
 ```markdown
-# Story File — SDD #NNN: <Título>
-**Sprint N | WAS-XX**
-**Classification: QUALITY / HU-MAJOR**
-**Source of truth: this file only. Read every file before modifying.**
+# Story File — SDD #NNN: <Title>
+**Classification: QUALITY**
 
 ## Context
-Por qué existe esta tarea. Qué problema resuelve.
+Why this exists. What problem it solves.
 
-## Acceptance Criteria
-Lista numerada de condiciones verificables. Sin ACs = sin DONE.
+## Acceptance Criteria (EARS format)
+WHEN [trigger], THE [system] SHALL [action]
+IF [bad condition], THEN THE [system] SHALL [response]
 
-## Wave 0 — Pre-flight (obligatorio)
-Verificaciones antes de ejecutar. Ver sección "Wave 0" abajo.
+## Wave 0 — Pre-flight
+[Builder re-validates before touching code]
 
-## Wave 1 — <Nombre>
-Instrucciones paso a paso. Código de referencia cuando aplica.
-**Build gate:** verificar que el build pasa antes de continuar.
-
-## Wave 2 — <Nombre>
-...
-**Build gate:** verificar que el build pasa antes de continuar.
+## Wave 1 — [Name]
+Step-by-step instructions.
+**Build gate:** verify build passes before continuing.
 
 ## Wave N — Commit + Push
-Comando exacto de git.
 
 ## Rollback
-Instrucciones para revertir si el fix causa regresión.
+How to revert if this causes a regression.
 
 ## Critical Constraints
-Reglas que el agente NO puede ignorar.
+Rules the agent CANNOT ignore.
 ```
 
-### Principios del SDD
+### Key Principles
 
-1. **Una sola fuente de verdad** — el agente lee el SDD y solo el SDD
-2. **Wave 0 siempre primero** — verificar estado actual antes de tocar código
-3. **Doble validación** — SM valida el SDD, sub-agente re-valida antes de ejecutar
-4. **Waves en orden estricto** — nunca saltarse pasos
-5. **Leer antes de modificar** — el agente lee cada archivo antes de tocarlo
-6. **Build gate por wave** — si el build falla al final de una wave, STOP y reportar
-7. **Test gate obligatorio** — si los tests fallan, el agente se detiene y reporta
-8. **Rollback documentado** — todo SDD debe incluir cómo revertir
-
----
-
-## Wave 0 — Pre-flight (obligatorio en todo SDD)
-
-Wave 0 tiene dos momentos de ejecución:
-1. **El SM lo ejecuta** antes de SPEC_APPROVED (para validar el SDD)
-2. **El sub-agente lo ejecuta** antes de Wave 1 (como defensa contra errores del SM)
-
-Esta doble ejecución crea redundancia: si el SM alucina en el SDD, el sub-agente lo detecta antes de tocar código.
-
-### Pasos de Wave 0
-
-| Paso | Verificación | Si falla |
-|------|-------------|----------|
-| **0.1** | ¿El fix ya existe en el codebase? (`grep`/búsqueda del cambio propuesto) | Marcar SDD como `ALREADY_IMPLEMENTED`, no ejecutar |
-| **0.2** | ¿Los archivos referenciados en las waves existen y tienen la estructura esperada? | Corregir rutas/firmas en el SDD |
-| **0.3a** | ¿El código de referencia del SDD compila contra los tipos/ABI reales del proyecto? | Corregir el código antes de aprobar |
-| **0.3b** | ¿El encoding de datos es correcto? (indexed events → keccak256, structs packed, mappings) | Corregir el código de referencia en el SDD |
-| **0.3c** | Para smart contracts: ¿hay riesgos de overflow, reentrancy, o front-running no documentados? | Agregar al SDD o crear constraint |
-| **0.4** | ¿Las dependencias entre SDDs están resueltas? (ej: WAS-166 depende de WAS-162) | Bloquear ejecución hasta que la dependencia esté DONE |
-| **0.5** | ¿El SDD tiene TODOs, placeholders o ambigüedades? | Completar antes de aprobar |
-
-### Instrucción para el sub-agente (incluir en el task)
-
-```
-Antes de ejecutar Wave 1, ejecuta Wave 0:
-Lee el SDD completo. Luego verifica:
-1. ¿Los archivos mencionados existen? Lee cada uno.
-2. ¿El código de referencia es compatible con los tipos reales?
-3. ¿El fix ya está implementado?
-Si encuentras discrepancias, STOP y reporta. No ejecutes.
-```
-
-**¿Por qué existe Wave 0?**
-
-Nació de la retro del Sprint de Quality Fixes (marzo 2026), donde:
-- 2 de 6 SDDs resultaron ya implementados (tokens y tiempo desperdiciados)
-- 1 SDD tenía un error de encoding (`indexed string` retorna keccak256, no el string directo) que el agente corrigió por suerte, no por proceso
-
-Wave 0 convierte esas lecciones en un paso obligatorio y redundante del proceso.
-
----
-
-## Build Gate por Wave
-
-Cada wave debe terminar con una verificación de build. No es opcional.
-
-```
-[Al final de cada Wave]
-1. Ejecutar build (ej: tsc --noEmit, forge build, npm run build)
-2. Si FALLA → STOP, reportar error, NO continuar a la siguiente wave
-3. Si PASA → continuar
-```
-
-**¿Por qué?** Un agente que commitea código roto al final de 5 waves desperdició todo el trabajo de las waves 2-5. Detectar en Wave 1 que algo está roto ahorra el 80% del tiempo.
-
----
-
-## Rollback Plan
-
-Todo SDD debe incluir instrucciones de rollback. El formato mínimo:
-
-```markdown
-## Rollback
-Si este fix causa regresión:
-1. `git revert <commit-hash>`
-2. Archivos afectados: [lista]
-3. Dependencias que se rompen al revertir: [lista o "ninguna"]
-4. Para smart contracts: el contrato anterior sigue deployado en [dirección]
-```
-
-**¿Por qué?** Sin rollback plan, una regresión en producción requiere debugging bajo presión. Con rollback plan, es un comando.
+1. **One source of truth** — the agent reads the SDD and only the SDD
+2. **Wave 0 first** — verify before touching code
+3. **Double validation** — Spec Reviewer + Builder both run Wave 0
+4. **Build gate per wave** — fail fast, not at the end
+5. **Rollback mandatory** — every SDD includes how to undo
+6. **Amendments are formal** — no silent SDD changes post-approval
 
 ---
 
 ## SDD Amendments
 
-Si el PO pide un cambio después de SPEC_APPROVED, no se modifica el SDD silenciosamente. Se crea un amendment formal:
+Scope changed after SPEC_APPROVED? No silent edits. Formal amendment:
 
 ```markdown
-## Amendment A1 — <Título>
-**Solicitado por:** PO
-**Fecha:** YYYY-MM-DD
-**Cambio:** Descripción del cambio
-**Waves afectadas:** Wave 2 (modificada), Wave 3 (nueva)
-**Impacto:** [bajo/medio/alto]
-**Aprobación:** AMENDMENT_APPROVED por PO
+## Amendment A1 — Free tier for first 2 registrations
+**Requested by:** PO
+**Impact:** HIGH (smart contract change)
+**Waves affected:** Wave 1 (modified), Wave 3 (new)
+**Approval:** AMENDMENT_APPROVED
 ```
 
-El amendment se agrega al final del SDD original. Mantiene trazabilidad completa.
-
-**Regla especial:** Amendments a smart contracts siempre son impacto ALTO y requieren re-ejecución de Wave 0.3c (verificación de seguridad).
+For smart contracts, amendments always trigger re-execution of Wave 0.3c (security verification).
 
 ---
 
-## Reglas de Paralelismo
+## Parallelism Rules
 
-Los sub-agentes pueden ejecutar en paralelo **solo si** se cumplen todas estas condiciones:
+Sub-agents can run in parallel **only if all conditions are met:**
 
-| Condición | Verificación |
-|-----------|-------------|
-| **Archivos disjuntos** | Los SDDs no tocan los mismos archivos (verificar en Wave 0.2) |
-| **Sin dependencias de import** | Los cambios de un SDD no son importados por otro SDD |
-| **Sin dependencias de orden** | Los SDDs no tienen relación `depende de` |
-| **Mismo branch base** | Todos parten del mismo commit |
+- ✅ Disjoint files (no SDD touches the same file as another)
+- ✅ No import dependencies between changes
+- ✅ No execution order dependencies
+- ✅ Same branch base
 
-Si alguna condición no se cumple → **ejecución secuencial** en orden de prioridad.
-
-**¿Por qué?** 4 sub-agentes tocando el mismo repo en paralelo pueden generar merge conflicts silenciosos. En smart contracts, un merge conflict puede introducir vulnerabilidades.
+If any condition fails → sequential execution. No exceptions.
 
 ---
 
-## Security Gate (para QUALITY y contratos)
+## Anti-patterns
 
-Los SDDs clasificados como QUALITY o que tocan smart contracts tienen un gate adicional post-ejecución:
-
-```
-Sub-agente commitea → SM revisa el diff real → Security Gate
-```
-
-### Checklist del Security Gate
-
-1. **¿El diff introduce nueva superficie de ataque?** (nuevos endpoints, nuevas funciones públicas, nuevos permisos)
-2. **¿Se mantiene el principio de menor privilegio?** (¿el cambio da más acceso del necesario?)
-3. **¿Los inputs están validados?** (Zod, require, bounds checking)
-4. **¿Hay secrets hardcodeados o expuestos?** (grep por API keys, private keys, tokens)
-5. **¿El error handling es seguro?** (¿los mensajes de error exponen información interna?)
-
-Si el SM encuentra un concern → **revert antes de push** o crear un hotfix SDD.
+| Don't | Why | Do instead |
+|-------|-----|-----------|
+| Execute without approved SDD | Agent hallucinates the design | Wait for SPEC_APPROVED |
+| Let SM validate its own SDD | Same blind spots, same context | Spec Reviewer validates |
+| Skip Wave 0 | Builds things that already exist, wrong encoding | Always run Wave 0 twice |
+| Skip build gate between waves | Accumulates errors, wastes all subsequent waves | Build gate after every wave |
+| SDD without rollback | Regression in prod = panic debugging | Rollback section mandatory |
+| Ad-hoc smart contract changes | Bypasses adversarial validation | Everything needs an SDD (minimum: amendment) |
+| Parallel agents on shared files | Silent merge conflicts, possible vulnerabilities | Verify disjoint files first |
+| QA without file:line evidence | "Looks good" is not verification | Cite exact file:line or NO CUMPLE |
+| Trust the orchestrator blindly | The SM hallucinates too | Double validation catches SM errors |
 
 ---
 
-## El Ciclo de un Sprint
+## Project Structure
 
 ```
-1.  SM presenta backlog priorizado
-2.  [1] Requirements Reviewer valida Work Items
-3.  PO aprueba HUs → HU_APPROVED
-4.  SM escribe SDDs para HU-MAJOR / QUALITY
-5.  [2] Spec Reviewer ejecuta Wave 0 + coherencia
-6.  PO revisa SDDs + reporte Spec Reviewer → SPEC_APPROVED
-7.  SM presenta Sprint Plan (incluyendo reglas de paralelismo)
-8.  PO aprueba → SPRINT_APPROVED
-9.  [3] Builders implementan (paralelo si archivos disjuntos)
-10. [4] Logic Auditor revisa cada diff
-11. [5] Security Reviewer revisa (solo QUALITY)
-12. [6] QA Verifier verifica ACs con evidencia
-13. SM presenta Review con todos los reportes
-14. PO aprueba → REVIEW_APPROVED
-15. Retro rápida — lecciones + acciones
-16. PO aprueba → RETRO_APPROVED
-17. Sprint cerrado → siguiente sprint
+NexusAgile/
+├── README.md              ← You're reading this
+├── SKILL.md               ← Imperative checklist for the AI orchestrator
+├── INSTALL.md             ← Setup guide
+├── roles/                 ← Role skills for each sub-agent
+│   ├── requirements-reviewer.md
+│   ├── spec-reviewer.md
+│   ├── builder.md
+│   ├── logic-auditor.md
+│   ├── security-reviewer.md
+│   └── qa-verifier.md
+└── references/            ← Detailed templates and checklists
+    ├── sdd_template.md
+    ├── story_file_template.md
+    ├── adversarial_review_checklist.md
+    ├── validation_report_template.md
+    ├── quality_pipeline.md
+    ├── quick_flow.md
+    ├── sprint_cadence.md
+    ├── agents_roster.md
+    ├── project_context_template.md
+    └── launch_flow.md
 ```
 
-## Persistencia de Artefactos
-
-Todos los artefactos viven en `.nexus/` dentro del proyecto. Nunca en la raíz, nunca sueltos.
-
-```
-<proyecto>/
-└── .nexus/                              ← Carpeta raíz de NexusAgil
-    ├── _INDEX.md                        ← Registro histórico de todas las HUs
-    ├── project-context.md               ← Context del proyecto (F0 Bootstrap)
-    └── sprints/
-        └── NNN-titulo-corto/            ← Carpeta por HU/issue
-            ├── work-item.md             ← F1: Work Item + ACs
-            ├── requirements-review.md   ← Reporte del Requirements Reviewer
-            ├── sdd.md                   ← F2: SDD aprobado
-            ├── spec-review.md           ← Reporte del Spec Reviewer
-            ├── story-file.md            ← F2.5: Story File para Builder
-            ├── build-report.md          ← Reporte del Builder
-            ├── logic-audit.md           ← Reporte del Logic Auditor
-            ├── security-review.md       ← Reporte del Security Reviewer (solo QUALITY)
-            ├── qa-report.md             ← Reporte del QA Verifier
-            └── report.md               ← DONE: Resumen final consolidado
-```
-
-**Reglas:**
-- Crear `.nexus/` al inicio si no existe
-- Cada sub-agente persiste su reporte en la carpeta del issue
-- `_INDEX.md` se actualiza al completar cada pipeline
-- Artefactos aprobados son inmutables (si hay cambios → `sdd-v2.md`)
-- `.nexus/` se commitea al repo — es parte del historial
+**Three files, three audiences:**
+- `README.md` → For you (understanding the methodology)
+- `SKILL.md` → For the AI agent (imperative execution checklist)
+- `roles/*.md` → For the sub-agents (specialized checklists per role)
 
 ---
 
-## Integración con NexusAudit
+## Integrates With
 
-Para trabajo de seguridad en smart contracts, NexusAgil se integra con NexusAudit:
+NexusAgil is **stack-agnostic** and **tool-agnostic**:
 
-```
-NexusAudit (8 fases) → Findings clasificados
-    ↓
-Findings → Issues en Linear (HU-MAJOR / KNOWN-LIMITATION)
-    ↓
-Issues → SDDs en NexusAgil
-    ↓
-SDDs → Fixes + PoC tests invertidos
-    ↓
-Fixes → Deploy nueva versión del contrato
-```
-
-El Fix Loop de NexusAudit es compatible con NexusAgil — cada finding se convierte en una HU que pasa por los gates correspondientes según su clasificación.
+- **AI Agents:** Claude Code, Cursor, GitHub Copilot, Gemini, any LLM-based coding agent
+- **Orchestration:** OpenClaw, Claude Code CLI, any tool that can spawn sub-agents
+- **Issue Trackers:** Linear, GitHub Issues, Jira (just read the issues)
+- **Stacks:** Next.js, Rails, Django, Go, Solidity, React Native — anything
+- **Security Audits:** Integrates with NexusAudit for smart contract security workflows
 
 ---
 
-## Validación Adversarial
+## FAQ
 
-Antes de que el PO apruebe un SDD, el SM hace una revisión adversarial:
+**Q: Do I need 6 AI subscriptions?**
+No. The sub-agents are spawned by the orchestrator as isolated sessions. One AI provider, multiple sessions.
 
-1. **Ejecuta Wave 0 completo** — ¿el fix ya existe? ¿Los archivos, tipos y encoding son correctos?
-2. **Valida código de referencia contra tipos reales** — ¿el código del SDD compila contra el ABI/interfaces del proyecto?
-3. **Busca el gap crítico** — ¿qué puede salir mal que el SDD no contempla?
-4. **Verifica dependencias ocultas** — ¿el SDD asume algo que no está documentado?
-5. **Prueba la aritmética** — para contratos: cada operación matemática se verifica
-6. **Valida el encoding** — para contratos: indexed strings → keccak256, structs packed, etc.
-7. **Verifica paralelismo** — ¿este SDD puede correr en paralelo con otros del sprint?
-8. **Valida el orden de waves** — ¿tiene sentido ejecutar en este orden?
-9. **Verifica rollback** — ¿el SDD tiene instrucciones de rollback claras?
+**Q: Is this just for smart contracts?**
+No. NexusAgil was built on a Web3 project but works with any stack. The Security Reviewer has extra checks for contracts, but the core methodology applies everywhere.
 
-Si el SM encuentra un problema crítico, el SDD se corrige antes de SPEC_APPROVED.
-Si el SM no encuentra problemas, dice explícitamente: "listo para SPEC_APPROVED".
+**Q: What if I'm a solo dev?**
+Perfect use case. You're the PO. The AI is the SM + all 6 sub-agents. You just approve gates and make decisions.
 
----
+**Q: What if the AI ignores the SKILL.md?**
+That's why it's written as an imperative checklist, not documentation. Steps say "HACER:" (DO:) not "consider" or "you might want to". If the agent still skips steps, the role skills for sub-agents provide a second layer of enforcement.
 
-## Roles
+**Q: How much does this add to token costs?**
+More than letting the agent freestyle. Less than fixing hallucinated code in production. The double validation (Wave 0 × 2) adds ~10-15% tokens but catches errors that would cost 10x more to debug later.
 
-### Product Owner (PO)
-- Define qué se construye y por qué
-- Aprueba los gates (incluyendo amendments)
-- Decide las prioridades del backlog
-- Da el go/no-go en decisiones de negocio
-
-### Scrum Master / Orquestador (SM)
-- Escribe artefactos (Work Items, SDDs)
-- **Nunca se auto-evalúa** — cada artefacto pasa por un sub-agente antes del PO
-- Orquesta los 6 sub-agentes (define orden, paralelismo, re-ejecución)
-- Presenta resultados + reportes de sub-agentes al PO
-- Actualiza issue tracker y documentación
-
-### Los 6 Sub-agentes Especializados
-
-Cada sub-agente tiene un **role skill** (`roles/*.md`) con: misión, checklist, formato de output, y lo que NO debe hacer.
-
-| # | Sub-agente | Misión | Cuándo | Role Skill |
-|---|-----------|--------|--------|-----------|
-| 1 | **Requirements Reviewer** | Encontrar lo que FALTA en el Work Item | Pre HU_APPROVED | `roles/requirements-reviewer.md` |
-| 2 | **Spec Reviewer** | Encontrar errores técnicos en el SDD (Wave 0 + coherencia) | Pre SPEC_APPROVED | `roles/spec-reviewer.md` |
-| 3 | **Builder** | Implementar EXACTAMENTE el SDD, nada más | Post SPRINT_APPROVED | `roles/builder.md` |
-| 4 | **Logic Auditor** | ¿El código hace lo correcto? Buscar bugs lógicos | Post Builder | `roles/logic-auditor.md` |
-| 5 | **Security Reviewer** | ¿El código es seguro? Buscar vulnerabilidades | Post Builder (solo QUALITY) | `roles/security-reviewer.md` |
-| 6 | **QA Verifier** | ¿Los ACs se cumplen? Con evidencia archivo:línea | Post Auditor/Security | `roles/qa-verifier.md` |
-
-**Principio clave: separación de responsabilidades**
-- Quien **escribe** (SM) no valida su propio trabajo
-- Quien **implementa** (Builder) no audita su código
-- Quien **audita lógica** (Auditor) no busca vulnerabilidades (Security)
-- Quien **verifica ACs** (QA) no opina sobre diseño
-
-**Cuántos sub-agentes por clasificación:**
-
-| Clasificación | Sub-agentes activos |
-|--------------|-------------------|
-| FAST-FIX | Solo Builder |
-| HU-MINOR | Builder + QA |
-| HU-MAJOR | Req Reviewer + Spec Reviewer + Builder + Logic Auditor + QA |
-| QUALITY | Los 6 completos |
+**Q: Can I use only parts of it?**
+Yes. FAST-FIX mode uses only the Builder. HU-MINOR adds QA. Use the full pipeline only when the risk justifies it.
 
 ---
 
-## Anti-patrones a evitar
+## Changelog
 
-| Anti-patrón | Consecuencia | Solución |
-|---|---|---|
-| Ejecutar sin SDD aprobado | El agente alucina el diseño | Esperar SPEC_APPROVED |
-| SDD con TODOs | El agente infiere incorrectamente | Completar el SDD antes de aprobar |
-| Saltarse Wave 0 | Se ejecutan SDDs para fixes que ya existen, o con encoding incorrecto | Wave 0 es obligatorio, siempre — doble ejecución (SM + sub-agente) |
-| SDD sin verificar encoding | El agente compara datos con tipo incorrecto (ej: indexed string vs keccak256) | Wave 0.3a/b verifica tipos y encoding |
-| No verificar build entre waves | El agente acumula errores y commitea código roto | Build gate al final de cada wave |
-| SDD sin rollback plan | Regresión en prod requiere debugging bajo presión | Sección Rollback obligatoria |
-| Cambio ad-hoc en smart contract | Cambio sin SDD bypassa validación adversarial | Todo cambio a contratos requiere SDD (mínimo amendment) |
-| Paralelismo sin verificar archivos | Merge conflicts silenciosos, posibles vulnerabilidades | Reglas de paralelismo estrictas |
-| Review sin evidencia | No se puede verificar si el trabajo está hecho | Exigir tests + build output |
-| Sprint sin scope fijo | Scope creep infinito | SPRINT_APPROVED fija el scope |
-| Gates implícitos | Nadie sabe en qué estado está el trabajo | Gates siempre explícitos y documentados |
-| Confiar solo en el SM | El SM también alucina — sin redundancia, errores pasan | Doble validación: SM + sub-agente ejecutan Wave 0 |
+**v1.3** (March 2026) — Specialized Sub-agent Architecture
+- 6 sub-agents with dedicated role skills (`roles/*.md`)
+- Orchestrator never self-evaluates
+- Artifact persistence in `.nexus/` (10 artifacts per issue)
+- Sub-agent scaling by classification (1 for FAST, 6 for QUALITY)
 
----
+**v1.2** (March 2026) — Anti-Hallucination Hardening
+- Wave 0.3 expanded (type validation, encoding, contract security)
+- Double Wave 0 execution (Spec Reviewer + Builder)
+- Build gate per wave, mandatory rollback, formal amendments
+- Parallelism rules, Security Gate post-execution
 
-## Historia
+**v1.1** (March 2026) — Wave 0 Introduction
+- Mandatory pre-flight checks
+- Anti-patterns documented
 
-NexusAgil nació durante el desarrollo de WasiAI en marzo 2026, cuando quedó claro que Scrum puro no era suficiente para coordinar un equipo donde los ejecutores son agentes de IA. La metodología evolucionó sprint a sprint, incorporando lecciones de cada retro.
-
-### Changelog
-
-**v1.3** (marzo 2026) — Arquitectura de Sub-agentes Especializados + Persistencia
-- 6 sub-agentes con role skills dedicados (`roles/*.md`)
-- Orquestador nunca se auto-evalúa — cada artefacto validado por sub-agente independiente
-- Requirements Reviewer valida Work Items antes de HU_APPROVED
-- Spec Reviewer ejecuta Wave 0 + coherencia antes de SPEC_APPROVED
-- Logic Auditor separado de Security Reviewer (corrección lógica vs vulnerabilidades)
-- QA Verifier con evidencia archivo:línea obligatoria
-- Tabla de sub-agentes por clasificación (FAST: 1, MINOR: 2, MAJOR: 5, QUALITY: 6)
-- Persistencia en `.nexus/` — carpeta dedicada, nunca en la raíz del proyecto
-- 10 artefactos por issue: work-item, requirements-review, sdd, spec-review, story-file, build-report, logic-audit, security-review, qa-report, report
-
-**v1.2** (marzo 2026) — Post Quality Fixes Sprint
-- Wave 0.3 ampliado: validación de código contra tipos reales (0.3a), encoding (0.3b), seguridad contratos (0.3c)
-- Doble validación Wave 0: SM + sub-agente ejecutan independientemente
-- Build gate obligatorio al final de cada wave
-- Sección Rollback obligatoria en todo SDD
-- SDD Amendments formales para cambios post-SPEC_APPROVED
-- Reglas de paralelismo con verificación de archivos disjuntos
-- Security Gate post-ejecución para QUALITY y smart contracts
-- Instrucción explícita para sub-agentes: re-validar Wave 0 antes de ejecutar
-
-**v1.1** (marzo 2026) — Post Quality Fixes Sprint
-- Wave 0 obligatorio (pre-flight checks)
-- Anti-patrones: saltarse Wave 0, encoding incorrecto, cambios ad-hoc
-
-**v1.0** (marzo 2026) — Release inicial
-- 5 gates formales, clasificación de trabajo, SDD structure
-- Primera aplicación: WasiAI Marketplace (Sprints 7-13)
+**v1.0** (March 2026) — Initial Release
+- 5 formal gates, work classification, SDD structure
+- First application: WasiAI Marketplace
 
 ---
 
-*NexusAgil es open-source. Úsalo, mejóralo, y contribuye lo que aprendas.*
+## Contributing
+
+NexusAgil evolved from real sprint retros. Every rule exists because something went wrong without it.
+
+If you use it and find a gap — open an issue or PR. The best improvements come from real failures.
+
+---
+
+## License
+
+MIT — Use it, fork it, improve it.
+
+---
+
+<p align="center">
+  <b>Stop shipping hallucinated code.</b><br>
+  <a href="INSTALL.md">Install NexusAgil →</a>
+</p>
