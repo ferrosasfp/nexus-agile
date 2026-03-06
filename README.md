@@ -97,6 +97,9 @@ Por qué existe esta tarea. Qué problema resuelve.
 ## Acceptance Criteria
 Lista numerada de condiciones verificables. Sin ACs = sin DONE.
 
+## Wave 0 — Pre-flight (obligatorio)
+Verificaciones antes de ejecutar. Ver sección "Wave 0" abajo.
+
 ## Wave 1 — <Nombre>
 Instrucciones paso a paso. Código de referencia cuando aplica.
 
@@ -113,10 +116,31 @@ Reglas que el agente NO puede ignorar.
 ### Principios del SDD
 
 1. **Una sola fuente de verdad** — el agente lee el SDD y solo el SDD
-2. **Waves en orden estricto** — nunca saltarse pasos
-3. **Leer antes de modificar** — el agente lee cada archivo antes de tocarlo
-4. **Build gate obligatorio** — si el build falla, el agente se detiene y reporta
-5. **Test gate obligatorio** — si los tests fallan, el agente se detiene y reporta
+2. **Wave 0 siempre primero** — verificar estado actual antes de tocar código
+3. **Waves en orden estricto** — nunca saltarse pasos
+4. **Leer antes de modificar** — el agente lee cada archivo antes de tocarlo
+5. **Build gate obligatorio** — si el build falla, el agente se detiene y reporta
+6. **Test gate obligatorio** — si los tests fallan, el agente se detiene y reporta
+
+### Wave 0 — Pre-flight (obligatorio en todo SDD)
+
+Wave 0 es la verificación que el Scrum Master ejecuta **antes de SPEC_APPROVED** y que el agente ejecutor repite **antes de Wave 1**. Evita trabajo duplicado, SDDs con errores técnicos, y sorpresas en ejecución.
+
+| Paso | Verificación | Si falla |
+|------|-------------|----------|
+| **0.1** | ¿El fix ya existe en el codebase? (`grep`/búsqueda del cambio propuesto) | Marcar SDD como `ALREADY_IMPLEMENTED`, no ejecutar |
+| **0.2** | ¿Los archivos referenciados en las waves existen y tienen la estructura esperada? | Corregir rutas/firmas en el SDD |
+| **0.3** | ¿El encoding de datos es correcto? (tipos indexados en eventos → keccak256, structs, mappings) | Corregir el código de referencia en el SDD |
+| **0.4** | ¿Las dependencias entre SDDs están resueltas? (ej: WAS-166 depende de WAS-162) | Bloquear ejecución hasta que la dependencia esté DONE |
+| **0.5** | ¿El SDD tiene TODOs, placeholders o ambigüedades? | Completar antes de aprobar |
+
+**¿Por qué existe Wave 0?**
+
+Nació de la retro del Sprint de Quality Fixes (marzo 2026), donde:
+- 2 de 6 SDDs resultaron ya implementados (tokens y tiempo desperdiciados)
+- 1 SDD tenía un error de encoding (`indexed string` retorna keccak256, no el string directo) que el agente corrigió por suerte, no por proceso
+
+Wave 0 convierte esas lecciones en un paso obligatorio del proceso.
 
 ---
 
@@ -161,12 +185,14 @@ El Fix Loop de NexusAudit es compatible con NexusAgil — cada finding se convie
 
 ## Validación Adversarial
 
-Antes de que Fer apruebe un SDD, San hace una revisión adversarial:
+Antes de que el PO apruebe un SDD, el SM hace una revisión adversarial:
 
-1. **Busca el gap crítico** — ¿qué puede salir mal?
-2. **Verifica dependencias ocultas** — ¿el SDD asume algo que no está documentado?
-3. **Prueba la aritmética** — para contratos: cada operación matemática se verifica
-4. **Valida el orden de waves** — ¿tiene sentido ejecutar en este orden?
+1. **Ejecuta Wave 0** — ¿el fix ya existe? ¿Los archivos y encoding son correctos?
+2. **Busca el gap crítico** — ¿qué puede salir mal?
+3. **Verifica dependencias ocultas** — ¿el SDD asume algo que no está documentado?
+4. **Prueba la aritmética** — para contratos: cada operación matemática se verifica
+5. **Valida el encoding** — para contratos: indexed strings → keccak256, structs packed, etc.
+6. **Valida el orden de waves** — ¿tiene sentido ejecutar en este orden?
 
 Si San encuentra un problema crítico, el SDD se corrige antes de SPEC_APPROVED.
 Si San no encuentra problemas, dice explícitamente: "listo para SPEC_APPROVED".
@@ -202,9 +228,12 @@ Si San no encuentra problemas, dice explícitamente: "listo para SPEC_APPROVED".
 |---|---|---|
 | Ejecutar sin SDD aprobado | El agente alucina el diseño | Esperar SPEC_APPROVED |
 | SDD con TODOs | El agente infiere incorrectamente | Completar el SDD antes de aprobar |
+| Saltarse Wave 0 | Se ejecutan SDDs para fixes que ya existen, o con encoding incorrecto | Wave 0 es obligatorio, siempre |
+| SDD sin verificar encoding | El agente compara datos con tipo incorrecto (ej: indexed string vs keccak256) | Wave 0.3 verifica encoding |
 | Review sin evidencia | No se puede verificar si el trabajo está hecho | Exigir tests + build output |
 | Sprint sin scope fijo | Scope creep infinito | SPRINT_APPROVED fija el scope |
 | Gates implícitos | Nadie sabe en qué estado está el trabajo | Gates siempre explícitos y documentados |
+| Cambio ad-hoc en smart contract | Cambio sin SDD bypassa validación adversarial | Todo cambio a contratos requiere SDD (mínimo amendment) |
 
 ---
 
@@ -212,7 +241,7 @@ Si San no encuentra problemas, dice explícitamente: "listo para SPEC_APPROVED".
 
 NexusAgil nació durante el desarrollo de WasiAI en marzo 2026, cuando quedó claro que Scrum puro no era suficiente para coordinar un equipo donde los ejecutores son agentes de IA. La metodología evolucionó sprint a sprint, incorporando lecciones de cada retro.
 
-Versión actual: **1.0**
+Versión actual: **1.1**
 Primera aplicación: WasiAI Marketplace (Sprints 7-13)
 
 ---
