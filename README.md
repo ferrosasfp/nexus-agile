@@ -264,21 +264,54 @@ Si el SM encuentra un concern → **revert antes de push** o crear un hotfix SDD
 ## El Ciclo de un Sprint
 
 ```
-1. SM presenta backlog priorizado
-2. PO aprueba HUs → HU_APPROVED
-3. SM escribe SDDs para HU-MAJOR / QUALITY
-4. SM ejecuta Wave 0 y validación adversarial
-5. PO revisa SDDs → SPEC_APPROVED
-6. SM presenta Sprint Plan (incluyendo reglas de paralelismo)
-7. PO aprueba → SPRINT_APPROVED
-8. Sub-agentes ejecutan Wave 0 (re-validación) + Waves 1..N
-9. SM ejecuta Security Gate en cambios QUALITY/contratos
-10. SM presenta Review con evidencia
-11. PO aprueba → REVIEW_APPROVED
-12. Retro rápida — lecciones + acciones
-13. PO aprueba → RETRO_APPROVED
-14. Sprint cerrado → siguiente sprint
+1.  SM presenta backlog priorizado
+2.  [1] Requirements Reviewer valida Work Items
+3.  PO aprueba HUs → HU_APPROVED
+4.  SM escribe SDDs para HU-MAJOR / QUALITY
+5.  [2] Spec Reviewer ejecuta Wave 0 + coherencia
+6.  PO revisa SDDs + reporte Spec Reviewer → SPEC_APPROVED
+7.  SM presenta Sprint Plan (incluyendo reglas de paralelismo)
+8.  PO aprueba → SPRINT_APPROVED
+9.  [3] Builders implementan (paralelo si archivos disjuntos)
+10. [4] Logic Auditor revisa cada diff
+11. [5] Security Reviewer revisa (solo QUALITY)
+12. [6] QA Verifier verifica ACs con evidencia
+13. SM presenta Review con todos los reportes
+14. PO aprueba → REVIEW_APPROVED
+15. Retro rápida — lecciones + acciones
+16. PO aprueba → RETRO_APPROVED
+17. Sprint cerrado → siguiente sprint
 ```
+
+## Persistencia de Artefactos
+
+Todos los artefactos viven en `.nexus/` dentro del proyecto. Nunca en la raíz, nunca sueltos.
+
+```
+<proyecto>/
+└── .nexus/                              ← Carpeta raíz de NexusAgil
+    ├── _INDEX.md                        ← Registro histórico de todas las HUs
+    ├── project-context.md               ← Context del proyecto (F0 Bootstrap)
+    └── sprints/
+        └── NNN-titulo-corto/            ← Carpeta por HU/issue
+            ├── work-item.md             ← F1: Work Item + ACs
+            ├── requirements-review.md   ← Reporte del Requirements Reviewer
+            ├── sdd.md                   ← F2: SDD aprobado
+            ├── spec-review.md           ← Reporte del Spec Reviewer
+            ├── story-file.md            ← F2.5: Story File para Builder
+            ├── build-report.md          ← Reporte del Builder
+            ├── logic-audit.md           ← Reporte del Logic Auditor
+            ├── security-review.md       ← Reporte del Security Reviewer (solo QUALITY)
+            ├── qa-report.md             ← Reporte del QA Verifier
+            └── report.md               ← DONE: Resumen final consolidado
+```
+
+**Reglas:**
+- Crear `.nexus/` al inicio si no existe
+- Cada sub-agente persiste su reporte en la carpeta del issue
+- `_INDEX.md` se actualiza al completar cada pipeline
+- Artefactos aprobados son inmutables (si hay cambios → `sdd-v2.md`)
+- `.nexus/` se commitea al repo — es parte del historial
 
 ---
 
@@ -391,7 +424,7 @@ NexusAgil nació durante el desarrollo de WasiAI en marzo 2026, cuando quedó cl
 
 ### Changelog
 
-**v1.3** (marzo 2026) — Arquitectura de Sub-agentes Especializados
+**v1.3** (marzo 2026) — Arquitectura de Sub-agentes Especializados + Persistencia
 - 6 sub-agentes con role skills dedicados (`roles/*.md`)
 - Orquestador nunca se auto-evalúa — cada artefacto validado por sub-agente independiente
 - Requirements Reviewer valida Work Items antes de HU_APPROVED
@@ -399,7 +432,8 @@ NexusAgil nació durante el desarrollo de WasiAI en marzo 2026, cuando quedó cl
 - Logic Auditor separado de Security Reviewer (corrección lógica vs vulnerabilidades)
 - QA Verifier con evidencia archivo:línea obligatoria
 - Tabla de sub-agentes por clasificación (FAST: 1, MINOR: 2, MAJOR: 5, QUALITY: 6)
-- Comparación con MetaGPT/ChatDev/CrewAI documentada
+- Persistencia en `.nexus/` — carpeta dedicada, nunca en la raíz del proyecto
+- 10 artefactos por issue: work-item, requirements-review, sdd, spec-review, story-file, build-report, logic-audit, security-review, qa-report, report
 
 **v1.2** (marzo 2026) — Post Quality Fixes Sprint
 - Wave 0.3 ampliado: validación de código contra tipos reales (0.3a), encoding (0.3b), seguridad contratos (0.3c)
